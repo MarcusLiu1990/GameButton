@@ -22,6 +22,8 @@ import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class GameButtonView extends View {
 
@@ -38,6 +40,7 @@ public class GameButtonView extends View {
     private long mFrequency = 1000;
 
     private int mStroke = 10;
+    private Paint mBmpPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private Paint mGradientPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private Paint mClearPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
@@ -59,6 +62,8 @@ public class GameButtonView extends View {
     private Path mCornerRightTop = new Path();
     private Path mCornerRightBottom = new Path();
 
+    private List<Point> mPointList = new ArrayList<>();
+
     public GameButtonView(Context context) {
         super(context);
         init(context, null);
@@ -79,7 +84,6 @@ public class GameButtonView extends View {
         init(context, attrs);
     }
 
-
     private void init(Context context, AttributeSet attrs){
         TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.GameButton);
 
@@ -92,10 +96,13 @@ public class GameButtonView extends View {
 
             mStartColor = ta.getColor(R.styleable.GameButton_startColor, Color.parseColor("#B79771"));
 
-            mEndColor = ta.getColor(R.styleable.GameButton_endColor, Color.WHITE);
+            mEndColor = ta.getColor(R.styleable.GameButton_endColor, Color.TRANSPARENT);
 
             mFrequency = ta.getInteger(R.styleable.GameButton_frequency, 1000);
         }
+
+        mBmpPaint.setAntiAlias(true);
+        mBmpPaint.setStyle(Paint.Style.FILL);
 
         mClearPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
         mClearPaint.setAntiAlias(true);
@@ -114,47 +121,46 @@ public class GameButtonView extends View {
 
         mCenterRect = new RectF(mStroke, mStroke, mWidth - mStroke, mHeight - mStroke);
 
-        List<Point> pointList = new ArrayList<>();
-        pointList.clear();
+        mPointList.clear();
 
         for(int i = 0; i < (float)(mHeight  / 2) / mGapDistance; i ++) {
-            pointList.add(new Point(mCenterX, (int)(i * mGapDistance)));
+            mPointList.add(new Point(mCenterX, (int)(i * mGapDistance)));
         }
 
         for(int i = (int)((float)(mWidth / 2) / mGapDistance); i >= 0; i--) {
-            pointList.add(new Point((int)(i * mGapDistance), mCenterY));
+            mPointList.add(new Point((int)(i * mGapDistance), mCenterY));
         }
 
         for(int i = (int)((float)(mWidth / 2) / mGapDistance); i > 0; i--) {
-            pointList.add(new Point((int)(-mCenterX + (i * mGapDistance)), mCenterY));
+            mPointList.add(new Point((int)(-mCenterX + (i * mGapDistance)), mCenterY));
         }
 
         for(int i = (int)((float)(mHeight / 2) / mGapDistance); i >= 0; i --) {
-            pointList.add(new Point(-mCenterX, (int)(i * mGapDistance)));
+            mPointList.add(new Point(-mCenterX, (int)(i * mGapDistance)));
         }
 
         for(int i = (int)((float)(mHeight / 2) / mGapDistance); i > 0; i --) {
-            pointList.add(new Point(-mCenterX, (int)(-mCenterY + (i * mGapDistance))));
+            mPointList.add(new Point(-mCenterX, (int)(-mCenterY + (i * mGapDistance))));
         }
 
         for(int i = 0; i < (float)(mWidth / 2) / mGapDistance; i ++) {
-            pointList.add(new Point((int)(-mCenterX + (i * mGapDistance)), -mCenterY));
+            mPointList.add(new Point((int)(-mCenterX + (i * mGapDistance)), -mCenterY));
         }
 
         for(int i = 1; i < (float)(mWidth / 2) / mGapDistance; i ++) {
-            pointList.add(new Point((int)(i * mGapDistance), -mCenterY));
+            mPointList.add(new Point((int)(i * mGapDistance), -mCenterY));
         }
 
         for(int i = 1; i < (float)(mHeight  / 2) / mGapDistance; i ++) {
-            pointList.add(new Point(mCenterX, (int)(-mCenterY + (i * mGapDistance))));
+            mPointList.add(new Point(mCenterX, (int)(-mCenterY + (i * mGapDistance))));
         }
 
         float degree = 0;
-        for(int i = 0; i < pointList.size(); i++) {
-            Point currentPoint = pointList.get(i);
+        for(int i = 0; i < mPointList.size(); i++) {
+            Point currentPoint = mPointList.get(i);
             Point nextPoint;
-            if(i + 1 < pointList.size()) nextPoint = pointList.get(i + 1);
-            else nextPoint = pointList.get(0);
+            if(i + 1 < mPointList.size()) nextPoint = mPointList.get(i + 1);
+            else nextPoint = mPointList.get(0);
 
             double c = mGapDistance;
             double a = Math.sqrt((currentPoint.x * currentPoint.x) + (currentPoint.y * currentPoint.y));
@@ -166,7 +172,7 @@ public class GameButtonView extends View {
             mAngle.add(degree);
         }
 
-        mSweepGradient = new SweepGradient(mCenterX, mCenterY, new int[]{ mStartColor, mEndColor }, new float[]{ 0.0f, 1.0f });
+        mSweepGradient = new SweepGradient(mCenterX, mCenterY, new int[]{ mStartColor, mEndColor, mEndColor, mStartColor }, new float[]{ 0.0f, 0.35f, 0.65f, 1.0f });
         mGradientPaint.setShader(mSweepGradient);
         initRoundedCornerPath();
     }
@@ -210,29 +216,46 @@ public class GameButtonView extends View {
     protected void onWindowVisibilityChanged(int visibility) {
         super.onWindowVisibilityChanged(visibility);
         if(visibility == VISIBLE) {
-            mHandler.post(mRunnable);
+//            mHandler.post(mRunnable);
+            mTimer.scheduleAtFixedRate(mTimerTask, 0, (long) (mFrequency / DISTANCE_DIVIDED_SIZE));
         }
         else{
-            mHandler.removeCallbacks(mRunnable);
+//            mHandler.removeCallbacks(mRunnable);
+            mTimer.cancel();
         }
     }
 
     private Handler mHandler = new Handler();
-    private Runnable mRunnable = new Runnable() {
+//    private Runnable mRunnable = new Runnable() {
+//        @Override
+//        public void run() {
+//
+//        }
+//    };
+
+//    mHandler = new Handler();
+    private Timer mTimer = new Timer();
+    private TimerTask mTimerTask = new TimerTask() {
         @Override
         public void run() {
-            if(mCurrentPointIndex >= mAngle.size())  mCurrentPointIndex = 0;
-
-            mMatrix.setRotate(mAngle.get(mCurrentPointIndex), mCenterX, mCenterY);
-            mSweepGradient.setLocalMatrix(mMatrix);
-            mHandler.postDelayed(this, (long) (mFrequency / DISTANCE_DIVIDED_SIZE));
-            mCurrentPointIndex ++;
-            invalidate();
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+//                    sync(); //要做的事情的一個方法
+                    mMatrix.setRotate(mAngle.get(mCurrentPointIndex), mCenterX, mCenterY);
+                    mSweepGradient.setLocalMatrix(mMatrix);
+//                    mHandler.postDelayed(this, (long) (mFrequency / DISTANCE_DIVIDED_SIZE));
+                    mCurrentPointIndex ++;
+                    if(mCurrentPointIndex >= mAngle.size())  mCurrentPointIndex = 0;
+                    invalidate();
+                }
+            });
         }
     };
 
+
     @Override
-    protected void onDraw(Canvas canvas) {
+    protected synchronized void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
         if(mGradientPaint != null && mCenterX > 0) {

@@ -2,8 +2,8 @@
 <resources>
 
     <declare-styleable name="GameButton">
-        <attr name="stroke" format="dimension"/>
-        <attr name="cornerRadius" format="dimension|float"/>
+        <attr name="stroke" format="dimension|reference"/>
+        <attr name="cornerRadius" format="dimension|reference"/>
 
         <attr name="startDrawable" format="reference"/>
         <attr name="startColor" format="reference|color"/>
