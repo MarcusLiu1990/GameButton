@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="GameButton">
+        <attr name="stroke" format="dimension"/>
+        <attr name="cornerRadius" format="dimension|float"/>
+
+        <attr name="startDrawable" format="reference"/>
+        <attr name="startColor" format="reference|color"/>
+        <attr name="endColor" format="reference|color"/>
+
+        <attr name="frequency" format="integer"/>
+    </declare-styleable>
+
+</resources>
