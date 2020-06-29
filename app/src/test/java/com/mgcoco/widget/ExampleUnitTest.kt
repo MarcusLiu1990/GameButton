@@ -1,4 +1,4 @@
-package com.mgcoco.myapplication
+package com.mgcoco.widget
 
 import org.junit.Test
 

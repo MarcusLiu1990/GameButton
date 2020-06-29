@@ -1,4 +1,4 @@
-package com.mgcoco.myapplication;
+package com.mgcoco.widget;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -12,7 +12,6 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.graphics.SweepGradient;
-import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -31,7 +30,6 @@ public class GameButtonView extends View {
     private int mSize;
     private int mCenterX, mCenterY;
     private SweepGradient mSweepGradient;
-
 
     private Matrix mMatrix = new Matrix();
 
@@ -54,8 +52,6 @@ public class GameButtonView extends View {
     private int mStartColor = Color.RED;
 
     private int mEndColor  = Color.WHITE;
-
-    private Drawable mStartDrawable;
 
     private Path mCornerLeftTop = new Path();
     private Path mCornerLeftBottom = new Path();
@@ -92,9 +88,7 @@ public class GameButtonView extends View {
 
             mStroke = ta.getDimensionPixelSize(R.styleable.GameButton_stroke, (int)convertDpToPixel(5, context));
 
-            mStartDrawable = ta.getDrawable(R.styleable.GameButton_startDrawable);
-
-            mStartColor = ta.getColor(R.styleable.GameButton_startColor, Color.parseColor("#B79771"));
+            mStartColor = ta.getColor(R.styleable.GameButton_startColor, Color.parseColor("#E5D98A"));
 
             mEndColor = ta.getColor(R.styleable.GameButton_endColor, Color.TRANSPARENT);
 
@@ -172,7 +166,7 @@ public class GameButtonView extends View {
             mAngle.add(degree);
         }
 
-        mSweepGradient = new SweepGradient(mCenterX, mCenterY, new int[]{ mStartColor, mEndColor, mEndColor, mStartColor }, new float[]{ 0.0f, 0.35f, 0.65f, 1.0f });
+        mSweepGradient = new SweepGradient(mCenterX, mCenterY, new int[]{ mStartColor, mEndColor}, new float[]{ 0.0f, 1.0f });
         mGradientPaint.setShader(mSweepGradient);
         initRoundedCornerPath();
     }
@@ -208,7 +202,6 @@ public class GameButtonView extends View {
         super.onSizeChanged(w, h, oldw, oldh);
         mWidth = w;
         mHeight = h;
-
         initPath();
     }
 
@@ -216,35 +209,25 @@ public class GameButtonView extends View {
     protected void onWindowVisibilityChanged(int visibility) {
         super.onWindowVisibilityChanged(visibility);
         if(visibility == VISIBLE) {
-//            mHandler.post(mRunnable);
             mTimer.scheduleAtFixedRate(mTimerTask, 0, (long) (mFrequency / DISTANCE_DIVIDED_SIZE));
         }
         else{
-//            mHandler.removeCallbacks(mRunnable);
             mTimer.cancel();
         }
     }
 
     private Handler mHandler = new Handler();
-//    private Runnable mRunnable = new Runnable() {
-//        @Override
-//        public void run() {
-//
-//        }
-//    };
 
-//    mHandler = new Handler();
     private Timer mTimer = new Timer();
+
     private TimerTask mTimerTask = new TimerTask() {
         @Override
         public void run() {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-//                    sync(); //要做的事情的一個方法
                     mMatrix.setRotate(mAngle.get(mCurrentPointIndex), mCenterX, mCenterY);
                     mSweepGradient.setLocalMatrix(mMatrix);
-//                    mHandler.postDelayed(this, (long) (mFrequency / DISTANCE_DIVIDED_SIZE));
                     mCurrentPointIndex ++;
                     if(mCurrentPointIndex >= mAngle.size())  mCurrentPointIndex = 0;
                     invalidate();

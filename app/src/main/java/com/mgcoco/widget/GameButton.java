@@ -1,4 +1,4 @@
-package com.mgcoco.myapplication;
+package com.mgcoco.widget;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -30,7 +30,6 @@ public class GameButton extends FrameLayout {
         super(context, attrs, defStyleAttr, defStyleRes);
         init(context, attrs);
     }
-
 
     private void init(Context context, AttributeSet attrs){
         mView = new GameButtonView(context, attrs);

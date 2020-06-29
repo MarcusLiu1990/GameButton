@@ -1,4 +1,4 @@
-package com.mgcoco.myapplication
+package com.mgcoco.widget
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
